@@ -24,6 +24,8 @@
                                 h.Username("guest");
                                 h.Password("guest");
                             });
+
+                            cfg.Publish<OutboundNotification>(p => { p.ExchangeType = "topic"; });
                         });
                     });
                 })
@@ -34,12 +36,10 @@
             var routingKey = $"outbound.{tenantId}";
 
             var bus = host.Services.GetRequiredService<IBusControl>();
-            var sendEndpoint = await bus.GetSendEndpoint(new Uri($"queue:outbound_notification_queue"));
+
             for (int i = 1; i <= 1_500; i++)
             {
-
-
-                await sendEndpoint.Send(new OutboundNotification
+                await bus.Publish(new OutboundNotification
                 {
                     TenantId = tenantId,
                     Content = $"Message {i} from {tenantId}"

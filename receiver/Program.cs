@@ -10,9 +10,6 @@ namespace receiver
     {
         static async Task Main(string[] args)
         {
-            bool sendTenantAsHeader = true;
-            bool useRouterKey = true;
-
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
@@ -28,24 +25,29 @@ namespace receiver
                                 h.Password("guest");
                             });
 
-                            cfg.ReceiveEndpoint("outbound_notification_queue", e =>
-                            {
-                                e.Consumer<OutboundNotificationConsumer>(context, consumerCfg =>
-                                {
-                                    consumerCfg.Message<OutboundNotification>(msg =>
-                                    {
-                                        msg.UsePartitioner(64, ctx =>
-                                        {
-                                            if (sendTenantAsHeader)
-                                            {
-                                                return ctx.Headers.Get<string>("TenantId") ?? "unknown";
-                                            }
+                            cfg.Publish<OutboundNotification>(p => { p.ExchangeType = "topic"; });
 
-                                            return ctx.Message.TenantId;
+                            new List<string> { "test1", "test2", "test3", "test4", "demo" }
+                                .ForEach(tenantId =>
+                                {
+                                    var routingKey = $"outbound.{tenantId}";
+
+                                    cfg.ReceiveEndpoint(routingKey, e =>
+                                    {
+                                        e.ConfigureConsumeTopology = false;
+
+                                        e.PrefetchCount = 1;
+                                        e.ConcurrentMessageLimit = 1;
+
+                                        e.Bind("shared:OutboundNotification", b =>
+                                        {
+                                            b.ExchangeType = "topic";
+                                            b.RoutingKey = routingKey;
                                         });
+
+                                        e.ConfigureConsumer<OutboundNotificationConsumer>(context);
                                     });
                                 });
-                            });
                         });
                     });
 
