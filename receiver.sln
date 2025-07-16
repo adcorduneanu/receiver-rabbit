@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "receiver", "receiver\receiver.csproj", "{5A634D27-6D88-4B2B-AA32-2107E231CF3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sender", "..\sender\sender.csproj", "{AF7E4596-7D6A-40F8-A83D-4E8518165ECA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shared", "..\shared\shared.csproj", "{CA514659-3C37-43FD-B6D3-7ACA37656E1C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A634D27-6D88-4B2B-AA32-2107E231CF3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A634D27-6D88-4B2B-AA32-2107E231CF3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A634D27-6D88-4B2B-AA32-2107E231CF3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A634D27-6D88-4B2B-AA32-2107E231CF3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF7E4596-7D6A-40F8-A83D-4E8518165ECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF7E4596-7D6A-40F8-A83D-4E8518165ECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF7E4596-7D6A-40F8-A83D-4E8518165ECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF7E4596-7D6A-40F8-A83D-4E8518165ECA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4230AEC9-0388-4F87-BDCA-E45625FE0640}
+	EndGlobalSection
+EndGlobal
