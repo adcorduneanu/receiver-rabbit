@@ -10,9 +10,6 @@ namespace receiver
     {
         static async Task Main(string[] args)
         {
-            bool sendTenantAsHeader = true;
-            bool useRouterKey = true;
-
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
@@ -36,12 +33,7 @@ namespace receiver
                                     {
                                         msg.UsePartitioner(64, ctx =>
                                         {
-                                            if (sendTenantAsHeader)
-                                            {
-                                                return ctx.Headers.Get<string>("TenantId") ?? "unknown";
-                                            }
-
-                                            return ctx.Message.TenantId;
+                                            return ctx.Headers.Get<string>("TenantId") ?? ctx.Message.TenantId;
                                         });
                                     });
                                 });
