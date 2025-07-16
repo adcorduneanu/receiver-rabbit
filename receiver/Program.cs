@@ -4,7 +4,7 @@ namespace receiver
     using MassTransit;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using RabbitMQ.Client;
+    using shared;
 
     internal class Program
     {
@@ -18,7 +18,7 @@ namespace receiver
                 {
                     services.AddMassTransit(x =>
                     {
-                        x.AddConsumer<WozConsumer>();
+                        x.AddConsumer<OutboundNotificationConsumer>();
 
                         x.UsingRabbitMq((context, cfg) =>
                         {
@@ -28,55 +28,24 @@ namespace receiver
                                 h.Password("guest");
                             });
 
-                            cfg.ReceiveEndpoint("outbound-all-tenants", e =>
+                            cfg.ReceiveEndpoint("outbound_notification_queue", e =>
                             {
-                                //e.ConfigureConsumeTopology = false;
-
-                                e.Bind("shared:WozOutboundNotification", s =>
+                                e.Consumer<OutboundNotificationConsumer>(context, consumerCfg =>
                                 {
-                                    s.RoutingKey = "outbound.*";
-                                    //s.ExchangeType = ExchangeType.Topic;
-                                });
-
-                                e.ConfigureConsumer<WozConsumer>(context);
-                            });
-                            /*
-                            if (useRouterKey)
-                            {
-
-                                cfg.ReceiveEndpoint("outbound-all-tenants", e =>
-                                {
-
-                                    e.Bind("outbound-topic-exchange", x =>
+                                    consumerCfg.Message<OutboundNotification>(msg =>
                                     {
-                                        x.ExchangeType = "topic";
-                                        x.RoutingKey = "outbound.*";
-                                    });
-
-                                    e.ConfigureConsumer<WozConsumer>(context);
-                                });
-                            }
-                            else
-                            {
-                                cfg.ReceiveEndpoint("woz_outbound_queue", e =>
-                                {
-                                    e.Consumer<WozConsumer>(context, consumerCfg =>
-                                    {
-                                        consumerCfg.Message<WozOutboundNotification>(msg =>
+                                        msg.UsePartitioner(64, ctx =>
                                         {
-                                            msg.UsePartitioner(64, ctx =>
+                                            if (sendTenantAsHeader)
                                             {
-                                                if (sendTenantAsHeader)
-                                                {
-                                                    return ctx.Headers.Get<string>("TenantId") ?? "unknown";
-                                                }
+                                                return ctx.Headers.Get<string>("TenantId") ?? "unknown";
+                                            }
 
-                                                return ctx.Message.TenantId;
-                                            });
+                                            return ctx.Message.TenantId;
                                         });
                                     });
                                 });
-                            }*/
+                            });
                         });
                     });
 

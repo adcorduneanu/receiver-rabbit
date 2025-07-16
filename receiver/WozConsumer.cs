@@ -4,9 +4,9 @@ using shared;
 
 namespace receiver
 {
-    public class WozConsumer : IConsumer<WozOutboundNotification>
+    public class OutboundNotificationConsumer : IConsumer<OutboundNotification>
     {
-        public async Task Consume(ConsumeContext<WozOutboundNotification> context)
+        public async Task Consume(ConsumeContext<OutboundNotification> context)
         {
             var msg = context.Message;
 
