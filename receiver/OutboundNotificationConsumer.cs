@@ -1,4 +1,4 @@
-﻿// Receiver/WozConsumer.cs
+﻿// Receiver/OutboundNotificationConsumer.cs
 using MassTransit;
 using shared;
 
