@@ -11,6 +11,7 @@
         {
 
             var tenantId = args.Length > 0 ? args[0] : "default-tenant";
+            var numberOfMessages = args.Length > 1 ? int.Parse(args[1]) : 5;
 
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
@@ -37,7 +38,7 @@
 
             var bus = host.Services.GetRequiredService<IBusControl>();
 
-            for (int i = 1; i <= 1_500; i++)
+            for (int i = 1; i <= numberOfMessages; i++)
             {
                 await bus.Publish(new OutboundNotification
                 {

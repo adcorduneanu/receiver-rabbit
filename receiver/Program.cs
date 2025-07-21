@@ -13,6 +13,8 @@ namespace receiver
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
+                    services.AddScoped<ITenantContext, TenantContext>();
+                    services.AddScoped<ITenantDbContextFactory, TenantDbContextFactory>();
                     services.AddMassTransit(x =>
                     {
                         x.AddConsumer<OutboundNotificationConsumer>();
@@ -24,6 +26,9 @@ namespace receiver
                                 h.Username("guest");
                                 h.Password("guest");
                             });
+
+                            cfg.UseConsumeFilter(typeof(TenantDbSetupFilter<>), context);
+
 
                             cfg.Publish<OutboundNotification>(p => { p.ExchangeType = "topic"; });
 
