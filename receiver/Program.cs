@@ -1,5 +1,4 @@
-﻿// Receiver/Program.cs
-namespace receiver
+﻿namespace receiver
 {
     using MassTransit;
     using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +9,7 @@ namespace receiver
     using receiver.infra.tenant;
     using receiver.extensions;
 
-    internal class Program
+    internal sealed class Program
     {
         static async Task Main(string[] args)
         {

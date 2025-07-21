@@ -1,16 +1,24 @@
-﻿// Receiver/BusRunner.cs
-using MassTransit;
-
-namespace receiver
+﻿namespace receiver
 {
-    public class BusRunner : IHostedService
+    using MassTransit;
+
+    public sealed class BusRunner : IHostedService
     {
-        private readonly IBusControl _bus;
+        private readonly IBusControl bus;
 
-        public BusRunner(IBusControl bus) => _bus = bus;
+        public BusRunner(IBusControl bus)
+        {
+            this.bus = bus;
+        }
 
-        public Task StartAsync(CancellationToken cancellationToken) => _bus.StartAsync(cancellationToken);
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            return this.bus.StartAsync(cancellationToken);
+        }
 
-        public Task StopAsync(CancellationToken cancellationToken) => _bus.StopAsync(cancellationToken);
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return this.bus.StopAsync(cancellationToken);
+        }
     }
 }

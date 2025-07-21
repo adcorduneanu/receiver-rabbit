@@ -1,9 +1,11 @@
 namespace receiver.infra.tenant
 {
-    public class TenantContext : ITenantContext
+    public sealed class TenantContext : ITenantContext
     {
-        private static readonly AsyncLocal<string?> _current = new();
-        public string? GetTenantId() => _current.Value;
-        public void SetTenantId(string? value) => _current.Value = value;
+        private static readonly AsyncLocal<string?> current = new();
+
+        public string? GetTenantId() => current.Value;
+
+        public void SetTenantId(string? value) => current.Value = value;
     }
 }

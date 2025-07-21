@@ -1,35 +1,34 @@
-// receiver/TenantDbContextFactory.cs
 namespace receiver.infra.tenant
 {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
 
-    public class TenantDbContextFactory : ITenantDbContextFactory
+    public sealed class TenantDbContextFactory : ITenantDbContextFactory
     {
-        private readonly ConcurrentDictionary<string, DummyTenantDbContext> _contexts = new();
-        private static readonly HashSet<string> _allowedTenants = new(StringComparer.OrdinalIgnoreCase)
+        private readonly ConcurrentDictionary<string, DummyTenantDbContext> contexts = new();
+        private static readonly HashSet<string> allowedTenants = new(StringComparer.OrdinalIgnoreCase)
         {
             "test1", "test2", "test3", "test4"
         };
 
-        private readonly ITenantContext _tenantContext;
+        private readonly ITenantContext tenantContext;
         private readonly TenantMessageStore tenantMessageStore;
 
         public TenantDbContextFactory(ITenantContext tenantContext, TenantMessageStore tenantMessageStore)
         {
-            _tenantContext = tenantContext;
+            this.tenantContext = tenantContext;
             this.tenantMessageStore = tenantMessageStore;
         }
 
         public DummyTenantDbContext GetOrCreate(string? tenantId = null)
         {
-            tenantId ??= _tenantContext.GetTenantId();
+            tenantId ??= this.tenantContext.GetTenantId();
 
-            if (string.IsNullOrWhiteSpace(tenantId) || !_allowedTenants.Contains(tenantId))
+            if (string.IsNullOrWhiteSpace(tenantId) || !allowedTenants.Contains(tenantId))
                 throw new InvalidOperationException($"Unknown or missing tenant: '{tenantId}'");
 
-            return _contexts.GetOrAdd(tenantId, id => new DummyTenantDbContext(id, tenantMessageStore));
+            return this.contexts.GetOrAdd(tenantId, id => new DummyTenantDbContext(id, this.tenantMessageStore));
         }
     }
 }

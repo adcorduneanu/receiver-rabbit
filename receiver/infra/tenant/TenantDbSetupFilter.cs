@@ -3,19 +3,19 @@ namespace receiver.infra.tenant
     using MassTransit;
     using System.Threading.Tasks;
 
-    public class TenantDbSetupFilter<T> : IFilter<ConsumeContext<T>> where T : class
+    public sealed class TenantDbSetupFilter<T> : IFilter<ConsumeContext<T>> where T : class
     {
-        private readonly ITenantContext _tenantContext;
+        private readonly ITenantContext tenantContext;
 
         public TenantDbSetupFilter(ITenantContext tenantContext)
         {
-            _tenantContext = tenantContext;
+            this.tenantContext = tenantContext;
         }
 
         public async Task Send(ConsumeContext<T> context, IPipe<ConsumeContext<T>> next)
         {
             var tenantId = context.Headers.Get<string>("TenantId");
-            _tenantContext.SetTenantId(tenantId);
+            this.tenantContext.SetTenantId(tenantId);
             await next.Send(context);
         }
 

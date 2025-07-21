@@ -1,4 +1,3 @@
-// receiver/ITenantDbContextFactory.cs
 namespace receiver.infra.tenant
 {
     public interface ITenantDbContextFactory
