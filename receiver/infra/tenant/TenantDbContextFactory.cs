@@ -1,5 +1,5 @@
 // receiver/TenantDbContextFactory.cs
-namespace receiver
+namespace receiver.infra.tenant
 {
     using System;
     using System.Collections.Concurrent;
@@ -14,10 +14,12 @@ namespace receiver
         };
 
         private readonly ITenantContext _tenantContext;
+        private readonly TenantMessageStore tenantMessageStore;
 
-        public TenantDbContextFactory(ITenantContext tenantContext)
+        public TenantDbContextFactory(ITenantContext tenantContext, TenantMessageStore tenantMessageStore)
         {
             _tenantContext = tenantContext;
+            this.tenantMessageStore = tenantMessageStore;
         }
 
         public DummyTenantDbContext GetOrCreate(string? tenantId = null)
@@ -27,7 +29,7 @@ namespace receiver
             if (string.IsNullOrWhiteSpace(tenantId) || !_allowedTenants.Contains(tenantId))
                 throw new InvalidOperationException($"Unknown or missing tenant: '{tenantId}'");
 
-            return _contexts.GetOrAdd(tenantId, id => new DummyTenantDbContext(id));
+            return _contexts.GetOrAdd(tenantId, id => new DummyTenantDbContext(id, tenantMessageStore));
         }
     }
 }

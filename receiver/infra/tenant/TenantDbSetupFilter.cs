@@ -1,4 +1,4 @@
-namespace receiver
+namespace receiver.infra.tenant
 {
     using MassTransit;
     using System.Threading.Tasks;

@@ -5,16 +5,22 @@ namespace receiver
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using shared;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using receiver.infra.tenant;
+    using receiver.extensions;
 
     internal class Program
     {
         static async Task Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder()
+            var appBuilder = WebApplication.CreateBuilder()
                 .ConfigureServices(services =>
                 {
+                    services.AddSingleton<TenantMessageStore>();
                     services.AddScoped<ITenantContext, TenantContext>();
                     services.AddScoped<ITenantDbContextFactory, TenantDbContextFactory>();
+                    services.AddScoped<OutboundNotificationConsumer>();
                     services.AddMassTransit(x =>
                     {
                         x.AddConsumer<OutboundNotificationConsumer>();
@@ -28,7 +34,6 @@ namespace receiver
                             });
 
                             cfg.UseConsumeFilter(typeof(TenantDbSetupFilter<>), context);
-
 
                             cfg.Publish<OutboundNotification>(p => { p.ExchangeType = "topic"; });
 
@@ -57,10 +62,17 @@ namespace receiver
                     });
 
                     services.AddHostedService<BusRunner>();
-                })
-                .Build();
+                });
 
-            await host.RunAsync();
+            var app = appBuilder.Build();
+
+            app.MapGet("/messages/{tenantId}", (string tenantId, TenantMessageStore store) =>
+            {
+                var messages = store.GetMessages(tenantId);
+                return Results.Ok(messages);
+            });
+
+            await app.RunAsync();
         }
     }
 }

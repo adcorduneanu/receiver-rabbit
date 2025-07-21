@@ -1,6 +1,5 @@
 ﻿// Receiver/BusRunner.cs
 using MassTransit;
-using Microsoft.Extensions.Hosting;
 
 namespace receiver
 {

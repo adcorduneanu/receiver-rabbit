@@ -1,5 +1,5 @@
 // receiver/ITenantDbContextFactory.cs
-namespace receiver
+namespace receiver.infra.tenant
 {
     public interface ITenantDbContextFactory
     {
