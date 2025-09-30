@@ -2,6 +2,7 @@ namespace receiver.infra.tenant
 {
     using MassTransit;
     using System.Threading.Tasks;
+    using LogContext = Serilog.Context.LogContext;
 
     public sealed class TenantDbSetupFilter<T> : IFilter<ConsumeContext<T>> where T : class
     {
@@ -15,7 +16,10 @@ namespace receiver.infra.tenant
         public async Task Send(ConsumeContext<T> context, IPipe<ConsumeContext<T>> next)
         {
             var tenantId = context.Headers.Get<string>("TenantId");
+
             this.tenantContext.SetTenantId(tenantId);
+            LogContext.PushProperty("TenantId", tenantId);
+
             await next.Send(context);
         }
 

@@ -2,15 +2,17 @@
 {
     using MassTransit;
     using receiver.infra.tenant;
-    using shared;
+    using shared.events;
 
     public sealed class OutboundNotificationConsumer : IConsumer<OutboundNotification>
     {
+        private readonly ILogger logger;
         private readonly ITenantContext tenantContext;
         private readonly ITenantDbContextFactory tenantDbContextFactory;
 
-        public OutboundNotificationConsumer(ITenantContext tenantContext, ITenantDbContextFactory tenantDbContextFactory)
+        public OutboundNotificationConsumer(ILogger<OutboundNotificationConsumer> logger, ITenantContext tenantContext, ITenantDbContextFactory tenantDbContextFactory)
         {
+            this.logger = logger;
             this.tenantContext = tenantContext;
             this.tenantDbContextFactory = tenantDbContextFactory;
         }
@@ -21,9 +23,9 @@
             this.tenantDbContextFactory.GetOrCreate().AddMessage(context.Message);
 
             var msg = context.Message;
-            Console.WriteLine($"[START] tenant {tenantId}: {msg.Content} at {DateTime.UtcNow:O}");
+            logger.LogInformation($"[START] tenant {tenantId}: {msg.Content} at {DateTime.UtcNow:O}");
             await Task.Delay(5000);
-            Console.WriteLine($"[ END ] tenant {tenantId}: {msg.Content} at {DateTime.UtcNow:O}");
+            logger.LogInformation($"[ END ] tenant {tenantId}: {msg.Content} at {DateTime.UtcNow:O}");
         }
     }
 }

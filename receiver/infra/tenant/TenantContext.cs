@@ -6,6 +6,9 @@ namespace receiver.infra.tenant
 
         public string? GetTenantId() => current.Value;
 
-        public void SetTenantId(string? value) => current.Value = value;
+        public void SetTenantId(string? value)
+        {
+            current.Value = value;
+        }
     }
 }

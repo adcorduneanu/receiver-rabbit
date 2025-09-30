@@ -1,11 +1,14 @@
 ﻿namespace sender
 {
+    using System;
     using MassTransit;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using shared;
+    using RabbitMQ.Client;
+    using shared.configs;
+    using shared.events;
 
-    internal class Program
+    internal sealed class Program
     {
         static async Task Main(string[] args)
         {
@@ -20,21 +23,16 @@
                     {
                         x.UsingRabbitMq((context, cfg) =>
                         {
-                            cfg.Host("localhost", "/", h =>
-                            {
-                                h.Username("guest");
-                                h.Password("guest");
-                            });
+                            cfg.ConfigureRabbitMq();
 
-                            cfg.Publish<OutboundNotification>(p => { p.ExchangeType = "topic"; });
+                            cfg.Publish<OutboundNotification>(p => { p.ExchangeType = ExchangeType.Topic; });
                         });
                     });
                 })
                 .Build();
 
             await host.StartAsync();
-
-            var routingKey = $"outbound.{tenantId}";
+            var routingKey = tenantId;
 
             var bus = host.Services.GetRequiredService<IBusControl>();
 

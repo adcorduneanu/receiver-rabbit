@@ -1,4 +1,4 @@
-﻿namespace shared
+﻿namespace shared.events
 {
     public record OutboundNotification
     {

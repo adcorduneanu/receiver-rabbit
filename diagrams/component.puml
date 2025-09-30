@@ -1,0 +1,18 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(user, "User", "Interacts with the system")
+
+System_Boundary(c1, "receiver-rabbit") {
+    Container(sender, "Sender", "C#", "Publishes OutboundNotification messages with routing key = tenantId")
+    Container(receiver, "Receiver", "C#", "Consumes OutboundNotification messages from tenant-specific queues")
+    ContainerDb(rabbitmq, "RabbitMQ", "Message Broker", "Topic exchange and tenant queues")
+}
+
+Rel(user, sender, "Triggers")
+Rel(sender, rabbitmq, "Publishes OutboundNotification (routingKey = tenantId)", "AMQP")
+Rel(receiver, rabbitmq, "Consumes from tenant queues", "AMQP")
+
+@enduml
