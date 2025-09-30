@@ -3,13 +3,16 @@
     using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
     using RabbitMQ.Client;
+    using receiver.infra.logging;
     using receiver.infra.tenant;
     using Serilog;
-    using Serilog.Core;
+    using Serilog.Events;
     using shared.configs;
     using shared.events;
+    using static shared.tenant.Headers;
 
     internal sealed class Program
     {
@@ -17,15 +20,9 @@
         {
             await DropAndCreateRabbitMqVHostAndPermissions();
 
-            Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [TenantId:{TenantId}] {Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
-
             var appBuilder = WebApplication.CreateBuilder();
 
-            appBuilder.Host.UseSerilog();
-            appBuilder.Services.AddLogging();
+            appBuilder.Services.AddSingleton<MassTransitErrorSink>();
 
             appBuilder.Services.AddSingleton<TenantMessageStore>();
             appBuilder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -43,6 +40,7 @@
                     cfg.UseConsumeFilter(typeof(TenantDbSetupFilter<>), context);
 
                     cfg.Publish<OutboundNotification>(p => { p.ExchangeType = ExchangeType.Topic; });
+                    cfg.Publish<ErrorLogMessage>(p => { p.ExchangeType = ExchangeType.Topic; });
 
                     new List<string> { "test1", "test2", "test3", "test4", "demo" }
                         .ForEach(tenantId =>
@@ -69,11 +67,25 @@
                 });
             });
 
+            appBuilder.Host.UseSerilog((context, services, loggerConfiguration) =>
+                       {
+                           loggerConfiguration
+                               .Enrich.FromLogContext()
+                               .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [TenantId:{TenantId}] {Message:lj}{NewLine}{Exception}")
+                               .WriteTo.Sink(new MassTransitErrorSink(services), new Serilog.Configuration.BatchingOptions { BatchSizeLimit = 10, BufferingTimeLimit = TimeSpan.FromSeconds(1) }, LogEventLevel.Error);
+                       });
+
+            appBuilder.Services.AddLogging();
+
             appBuilder.Services.AddHostedService<BusRunner>();
+
+
 
             var app = appBuilder.Build();
 
-            app.MapGet("/messages/{tenantId}", (string tenantId, TenantMessageStore store) =>
+            app.UseTenantIdentification();
+
+            app.MapGet("/messages/", ([FromHeader(Name = TenantId)] string tenantId, TenantMessageStore store) =>
             {
                 var messages = store.GetMessages(tenantId);
                 return Results.Ok(messages);

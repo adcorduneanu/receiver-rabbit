@@ -1,0 +1,6 @@
+@baseUrl = http://localhost:58639
+@tenantId = test1
+
+GET {{baseUrl}}/messages/
+Accept: application/json
+X-Tenant-ID: {{tenantId}}

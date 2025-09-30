@@ -45,7 +45,7 @@
                 }, ctx =>
                 {
                     ctx.SetRoutingKey(routingKey);
-                    ctx.Headers.Set("TenantId", tenantId);
+                    ctx.Headers.Set(Headers.TenantId, tenantId);
                 });
 
                 Console.WriteLine($"Published message {i} for tenant {tenantId}");
