@@ -10,6 +10,7 @@
     using OpenTelemetry.Metrics;
     using OpenTelemetry.Trace;
     using RabbitMQ.Client;
+    using receiver.extensions;
     using receiver.infra.logging;
     using receiver.infra.tenant;
     using Serilog;
@@ -28,18 +29,6 @@
 
             var azureMonitorConnectionString = appBuilder.Configuration["ApplicationInsightsConfig:ConnectionString"];
 
-            appBuilder.Services.AddOpenTelemetry()
-                .WithTracing(tracer => tracer
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddSource("MassTransit")
-                )
-                .WithMetrics(metrics => metrics
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddMeter("MassTransit"))
-                .UseAzureMonitor(o => { o.ConnectionString = azureMonitorConnectionString; });
-
             appBuilder.Services.AddSingleton<MassTransitErrorSink>();
 
             appBuilder.Services.AddSingleton<TenantMessageStore>();
@@ -47,43 +36,19 @@
             appBuilder.Services.AddScoped<ITenantDbContextFactory, TenantDbContextFactory>();
             appBuilder.Services.AddScoped<OutboundNotificationConsumer>();
 
-            appBuilder.Services.AddMassTransit(x =>
-            {
-                x.AddConsumer<OutboundNotificationConsumer>();
+            appBuilder.Services.AddMassTransitWithRabbitMq();
 
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.ConfigureRabbitMq();
-
-                    cfg.UseConsumeFilter(typeof(TenantDbSetupFilter<>), context);
-
-                    cfg.Publish<OutboundNotification>(p => { p.ExchangeType = ExchangeType.Topic; });
-                    cfg.Publish<ErrorLogMessage>(p => { p.ExchangeType = ExchangeType.Topic; });
-
-                    new List<string> { "test1", "test2", "test3", "test4", "demo" }
-                        .ForEach(tenantId =>
-                        {
-                            var routingKey = tenantId;
-                            var queueName = $"{RabbitMqConfig.VirtualHost}_OutboundNotification_{tenantId}";
-
-                            cfg.ReceiveEndpoint(queueName, e =>
-                            {
-                                e.ConfigureConsumeTopology = false;
-
-                                e.PrefetchCount = 1;
-                                e.ConcurrentMessageLimit = 1;
-
-                                e.Bind<OutboundNotification>(b =>
-                                {
-                                    b.ExchangeType = ExchangeType.Topic;
-                                    b.RoutingKey = routingKey;
-                                });
-
-                                e.ConfigureConsumer<OutboundNotificationConsumer>(context);
-                            });
-                        });
-                });
-            });
+            appBuilder.Services.AddOpenTelemetry()
+                        .WithTracing(tracer => tracer
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddSource("MassTransit")
+                        )
+                        .WithMetrics(metrics => metrics
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddMeter("MassTransit"))
+                        .UseAzureMonitor(o => { o.ConnectionString = azureMonitorConnectionString; });
 
             appBuilder.Host.UseSerilog((context, services, loggerConfiguration) =>
                        {
@@ -107,7 +72,6 @@
 
             await app.RunAsync();
         }
-
 
         private static async Task DropAndCreateRabbitMqVHostAndPermissions()
         {
