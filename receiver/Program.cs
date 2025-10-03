@@ -1,10 +1,14 @@
 ﻿namespace receiver
 {
+    using Azure.Monitor.OpenTelemetry.AspNetCore;
     using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using OpenTelemetry.Metrics;
+    using OpenTelemetry.Trace;
     using RabbitMQ.Client;
     using receiver.infra.logging;
     using receiver.infra.tenant;
@@ -14,13 +18,27 @@
     using shared.events;
     using static shared.tenant.Headers;
 
-    internal sealed class Program
+    internal static class Program
     {
         static async Task Main(string[] args)
         {
             await DropAndCreateRabbitMqVHostAndPermissions();
 
             var appBuilder = WebApplication.CreateBuilder();
+
+            var azureMonitorConnectionString = appBuilder.Configuration["ApplicationInsightsConfig:ConnectionString"];
+
+            appBuilder.Services.AddOpenTelemetry()
+                .WithTracing(tracer => tracer
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddSource("MassTransit")
+                )
+                .WithMetrics(metrics => metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddMeter("MassTransit"))
+                .UseAzureMonitor(o => { o.ConnectionString = azureMonitorConnectionString; });
 
             appBuilder.Services.AddSingleton<MassTransitErrorSink>();
 
@@ -73,13 +91,9 @@
                                .Enrich.FromLogContext()
                                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [TenantId:{TenantId}] {Message:lj}{NewLine}{Exception}")
                                .WriteTo.Sink(new MassTransitErrorSink(services), new Serilog.Configuration.BatchingOptions { BatchSizeLimit = 10, BufferingTimeLimit = TimeSpan.FromSeconds(1) }, LogEventLevel.Error);
-                       });
-
-            appBuilder.Services.AddLogging();
+                       }, writeToProviders: true);
 
             appBuilder.Services.AddHostedService<BusRunner>();
-
-
 
             var app = appBuilder.Build();
 

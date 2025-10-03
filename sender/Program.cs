@@ -7,6 +7,7 @@
     using RabbitMQ.Client;
     using shared.configs;
     using shared.events;
+    using static shared.tenant.Headers;
 
     internal sealed class Program
     {
@@ -45,7 +46,7 @@
                 }, ctx =>
                 {
                     ctx.SetRoutingKey(routingKey);
-                    ctx.Headers.Set(Headers.TenantId, tenantId);
+                    ctx.Headers.Set(TenantId, tenantId);
                 });
 
                 Console.WriteLine($"Published message {i} for tenant {tenantId}");

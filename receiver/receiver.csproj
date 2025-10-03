@@ -5,6 +5,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<UserSecretsId>receiver-1f1d7b5c-6c5e-4d8d-9c8a-3a7f5f5ad2f1</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -13,6 +14,7 @@
 		<PackageReference Include="Serilog" Version="4.3.0" />
 		<PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
