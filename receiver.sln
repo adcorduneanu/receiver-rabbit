@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sender", "sender\sender.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shared", "shared\shared.csproj", "{CA514659-3C37-43FD-B6D3-7ACA37656E1C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Receiver.IntegrationTests", "tests\Receiver.IntegrationTests\Receiver.IntegrationTests.csproj", "{D6E5F2A7-5B46-4ABB-9F2C-2E6F1D6F4A21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA514659-3C37-43FD-B6D3-7ACA37656E1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6E5F2A7-5B46-4ABB-9F2C-2E6F1D6F4A21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6E5F2A7-5B46-4ABB-9F2C-2E6F1D6F4A21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6E5F2A7-5B46-4ABB-9F2C-2E6F1D6F4A21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6E5F2A7-5B46-4ABB-9F2C-2E6F1D6F4A21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
