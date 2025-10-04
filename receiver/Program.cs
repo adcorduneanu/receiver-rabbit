@@ -29,6 +29,8 @@
 
             var azureMonitorConnectionString = appBuilder.Configuration["ApplicationInsightsConfig:ConnectionString"];
 
+            appBuilder.Logging.ClearProviders();
+
             appBuilder.Services.AddSingleton<MassTransitErrorSink>();
 
             appBuilder.Services.AddSingleton<TenantMessageStore>();
@@ -56,9 +58,7 @@
                                .Enrich.FromLogContext()
                                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [TenantId:{TenantId}] {Message:lj}{NewLine}{Exception}")
                                .WriteTo.Sink(new MassTransitErrorSink(services), new Serilog.Configuration.BatchingOptions { BatchSizeLimit = 10, BufferingTimeLimit = TimeSpan.FromSeconds(1) }, LogEventLevel.Error);
-                       }, writeToProviders: true);
-
-            appBuilder.Services.AddHostedService<BusRunner>();
+                       }, writeToProviders: true); // forward Serilog events into Azure Monitor provider
 
             var app = appBuilder.Build();
 
