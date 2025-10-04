@@ -1,7 +1,6 @@
 ﻿namespace receiver
 {
     using Azure.Monitor.OpenTelemetry.AspNetCore;
-    using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -9,14 +8,12 @@
     using Microsoft.Extensions.Logging;
     using OpenTelemetry.Metrics;
     using OpenTelemetry.Trace;
-    using RabbitMQ.Client;
     using receiver.extensions;
     using receiver.infra.logging;
     using receiver.infra.tenant;
     using Serilog;
     using Serilog.Events;
     using shared.configs;
-    using shared.events;
     using static shared.tenant.Headers;
 
     internal static class Program
@@ -28,8 +25,6 @@
             var appBuilder = WebApplication.CreateBuilder();
 
             var azureMonitorConnectionString = appBuilder.Configuration["ApplicationInsightsConfig:ConnectionString"];
-
-            appBuilder.Logging.ClearProviders();
 
             appBuilder.Services.AddSingleton<MassTransitErrorSink>();
 
@@ -52,13 +47,17 @@
                             .AddMeter("MassTransit"))
                         .UseAzureMonitor(o => { o.ConnectionString = azureMonitorConnectionString; });
 
+            appBuilder.Logging.ClearProviders();
+
             appBuilder.Host.UseSerilog((context, services, loggerConfiguration) =>
                        {
                            loggerConfiguration
                                .Enrich.FromLogContext()
                                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [TenantId:{TenantId}] {Message:lj}{NewLine}{Exception}")
                                .WriteTo.Sink(new MassTransitErrorSink(services), new Serilog.Configuration.BatchingOptions { BatchSizeLimit = 10, BufferingTimeLimit = TimeSpan.FromSeconds(1) }, LogEventLevel.Error);
-                       }, writeToProviders: true); // forward Serilog events into Azure Monitor provider
+                       }, writeToProviders: true);
+
+            //appBuilder.Services.AddHostedService<BusRunner>();
 
             var app = appBuilder.Build();
 
